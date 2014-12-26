@@ -5,8 +5,9 @@ import itertools as i
 
 
 main_path = '/Users/suhasv/Desktop/CourseEval/Scrape/test/'
-pw = ''
-un = ''
+#ENTER KERBEROS USERNAME AND PASSWORD BELOW TO SCRAPE
+pw = '' #KERBEROS PASSWORD
+un = '' #KERBEROS USERNAME
 
 def write_page(content, name = ""):
 	"""Generates .html file from content string. Useful for debugging."""
