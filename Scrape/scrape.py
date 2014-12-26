@@ -6,6 +6,7 @@ import itertools as i
 
 main_path = '/Users/suhasv/Desktop/CourseEval/Scrape/test/'
 #ENTER KERBEROS USERNAME AND PASSWORD BELOW TO SCRAPE
+#NOTE: IF YOU FILL IN INFO BELOW, SAVE AS 'use_scrape.py' SO GIT WILL IGNORE IT--DON'T PUSH
 pw = '' #KERBEROS PASSWORD
 un = '' #KERBEROS USERNAME
 
