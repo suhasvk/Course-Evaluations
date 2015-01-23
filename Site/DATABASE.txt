@@ -1,0 +1,18 @@
+The following is a description of the SQL database structure used to contain course evaluation info. It will be updated as the DB is implemented.
+
+TABLE 1:
+- 1 row / subject / survey window
+- Attributes:
+	- Prof names
+	- Course #'s
+	- Subj #'s
+	- Subj name
+	- Respondents
+	- Eligible Respondents
+
+
+TABLE STYLE 2:
+(1 table / subject / survey window)
+- 1 row / question in survey
+- Attributes:
+	- 1 column / potential answer to question, field containing # of students who gave that answer
