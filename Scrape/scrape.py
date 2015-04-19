@@ -9,8 +9,10 @@ import copy
 main_path = ''
 #ENTER KERBEROS USERNAME AND PASSWORD BELOW TO SCRAPE
 #NOTE: IF YOU FILL IN INFO BELOW, SAVE AS 'use_scrape.py' SO GIT WILL IGNORE IT--DON'T PUSH
-pw = '' #KERBEROS PASSWORD
-un = '' #KERBEROS USERNAME
+with open('__credentials.txt','r') as f:
+	un = f.readline().rstrip('\n') #KERBEROS USERNAME
+	pw = f.readline().rstrip('\n') #KERBEROS PASSWORD
+
 
 def write_page(content, name = ""):
 	"""Generates .html file from content string. Useful for debugging."""
