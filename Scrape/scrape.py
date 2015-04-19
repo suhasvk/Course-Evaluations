@@ -1,8 +1,8 @@
 # mitscrape.py
-import requests as r
+import requests
 import re
 # from bs4 import BeautifulSoup
-import itertools as i
+import itertools
 from basic_extraction_flow import NewStyleSurveyItem, OldStyleSurveyItem
 import copy
 
@@ -36,7 +36,7 @@ def scrape(url):
 	#--------------#
 
 	#CREATES SESSION
-	session = r.Session()
+	session = requests.Session()
 
 
 	#DOES INITIAL URL ATTEMPT; EXPECTS REDIRECT
@@ -64,7 +64,7 @@ def scrape(url):
 	years = map(str, range(1998,2014))
 	semesters = ['FA','SP']
 
-	for window in i.product(courses, years, semesters):
+	for window in itertools.product(courses, years, semesters):
 		#Following line searches evaluations for a given (course, year, semester)
 		search_page = session.get('https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=%s&departmentId=&subjectCode=%s&instructorName=&search=Search' % (window[1]+window[2], window[0]))
 
