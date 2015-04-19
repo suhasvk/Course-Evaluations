@@ -8,8 +8,7 @@ import re
 
 
 class NewStyleSurveyItem:
-
-	def __init__(self, file_str):
+	def __init__(self, file_str, session = None):
 		"""Initializes object. 
 		'file_str' <- html file of survey page, represented as a unicode string."""
 
@@ -56,6 +55,9 @@ class NewStyleSurveyItem:
 
 	def dump(self, cursor):
 		pass
+
+class DistributionPage
+
 
 class OldStyleSurveyItem:
 	def __init__(self, file_str):
