@@ -20,11 +20,11 @@ def write_page(content, name = ""):
 	f.write(content)
 	f.close()
 
-def get_SAML_data(page_str, s):
+def get_SAML_data(page_str, session):
 	relayState = re.findall('(?<=name="RelayState" value=")\S*(?=")', page_str)[0].replace('&#x3a;',':').replace('&amp;','&')
 	SAMLResponse = re.findall('(?<=name="SAMLResponse" value=")\S*(?=")', page_str)[0]
 	nextAction = re.findall('(?<=action=")\S*(?=")', page_str)[0].replace('&#x3a;',':').replace('&#x2f;','/')
-	s.headers.update({'Referer':'https://idp.mit.edu:446/idp/profile/SAML2/Redirect/SSO'}) 
+	session.headers.update({'Referer':'https://idp.mit.edu:446/idp/profile/SAML2/Redirect/SSO'}) 
 	return {'RelayState':relayState, 'SAMLResponse': SAMLResponse}, nextAction
 	
 
@@ -87,7 +87,7 @@ def scrape(url):
 
 		#If old, follow redirect through to page.
 		if old:
-			new_session = copy.deepcopy(s) #Must preserve current state of cookies in order for SAML response to make sense
+			new_session = copy.deepcopy(session) #Must preserve current state of cookies in order for SAML response to make sense
 
 			print window[1]+window[2],'OLD' #DEBUG
 			next = new_session.get(links[0])
