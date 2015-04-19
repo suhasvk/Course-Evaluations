@@ -1,0 +1,3 @@
+Dependencies: 
+
+Requests and BeautifulSoup

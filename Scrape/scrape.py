@@ -36,21 +36,21 @@ def scrape(url):
 	#--------------#
 
 	#CREATES SESSION
-	s = r.Session()
+	session = r.Session()
 
 
 	#DOES INITIAL URL ATTEMPT; EXPECTS REDIRECT
-	red1 = s.get(url)
+	red1 = session.get(url)
 
 	#ATTEMPTS LOGIN WITH USERNAME AND PASSWORD
 	action = re.findall('(?<=action=")\S*(?=")', red1.content)[1].replace('&amp;','&')
 	payload = {'j_username':un, 'j_password':pw, 'Submit':'Login'}
-	red2 = s.post(action, data = payload)
+	red2 = session.post(action, data = payload)
 
 
 	#ATTEMPTS OPENSAML RESPONSE
-	payload_2, nextAction = get_SAML_data(red2.content, s)
-	red3 = s.post(nextAction, data=payload_2)
+	payload_2, nextAction = get_SAML_data(red2.content, session)
+	red3 = session.post(nextAction, data=payload_2)
 
 	 
 	#THIS OUTPUTS FINAL PAGE (THE ONE YOU WANTED TO ACCESS)
@@ -66,7 +66,7 @@ def scrape(url):
 
 	for window in i.product(courses, years, semesters):
 		#Following line searches evaluations for a given (course, year, semester)
-		search_page = s.get('https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=%s&departmentId=&subjectCode=%s&instructorName=&search=Search' % (window[1]+window[2], window[0]))
+		search_page = session.get('https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=%s&departmentId=&subjectCode=%s&instructorName=&search=Search' % (window[1]+window[2], window[0]))
 
 		#If course wasn't offered that semester, do nothing.
 		if 'No records found' in search_page.content: 
@@ -87,12 +87,12 @@ def scrape(url):
 
 		#If old, follow redirect through to page.
 		if old:
-			new_s = copy.deepcopy(s) #Must preserve current state of cookies in order for SAML response to make sense
+			new_session = copy.deepcopy(s) #Must preserve current state of cookies in order for SAML response to make sense
 
 			print window[1]+window[2],'OLD' #DEBUG
-			next = new_s.get(links[0])
-			payload, nextAction = get_SAML_data(next.content, new_s)
-			eval_page = new_s.post(nextAction, data=payload)
+			next = new_session.get(links[0])
+			payload, nextAction = get_SAML_data(next.content, new_session)
+			eval_page = new_session.post(nextAction, data=payload)
 			item = OldStyleSurveyItem(eval_page.content)
 
 		#Otherwise, just get
