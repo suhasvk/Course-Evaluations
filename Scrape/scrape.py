@@ -3,7 +3,7 @@ import requests as r
 import re
 # from bs4 import BeautifulSoup
 import itertools as i
-from __basic_extraction_flow import NewStyleSurveyItem, OldStyleSurveyItem
+from basic_extraction_flow import NewStyleSurveyItem, OldStyleSurveyItem
 import copy
 
 main_path = ''
