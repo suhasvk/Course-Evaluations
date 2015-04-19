@@ -56,7 +56,10 @@ class NewStyleSurveyItem:
 	def dump(self, cursor):
 		pass
 
-class DistributionPage
+class DistributionPage:
+	def __init__(self, file_str):
+		self.soup = BeautifulSoup(file_str)
+		
 
 
 class OldStyleSurveyItem:
