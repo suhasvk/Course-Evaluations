@@ -97,8 +97,8 @@ def scrape(url):
 
 		#Otherwise, just get
 		else:
-			eval_page = s.get(link)
-			item = NewStyleSurveyItem(eval_page.content, s)
+			eval_page = session.get(link)
+			item = NewStyleSurveyItem(eval_page.content, session)
 
 if __name__ == '__main__':
 	scrape("https://edu-apps.mit.edu/ose-rpt/")
