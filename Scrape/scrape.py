@@ -23,7 +23,7 @@ def get_SAML_data(page_str, s):
 	SAMLResponse = re.findall('(?<=name="SAMLResponse" value=")\S*(?=")', page_str)[0]
 	nextAction = re.findall('(?<=action=")\S*(?=")', page_str)[0].replace('&#x3a;',':').replace('&#x2f;','/')
 	s.headers.update({'Referer':'https://idp.mit.edu:446/idp/profile/SAML2/Redirect/SSO'}) 
-	return {'RelayState':relayState, 'SAMLResponse': SAMLResponse}
+	return {'RelayState':relayState, 'SAMLResponse': SAMLResponse}, nextAction
 	
 
 def scrape(url):
@@ -47,7 +47,7 @@ def scrape(url):
 
 
 	#ATTEMPTS OPENSAML RESPONSE
-	payload_2 = get_SAML_data(red2.content, s)
+	payload_2, nextAction = get_SAML_data(red2.content, s)
 	red3 = s.post(nextAction, data=payload_2)
 
 	 
@@ -87,11 +87,11 @@ def scrape(url):
 		if old:
 			new_s = copy.deepcopy(s) #Must preserve current state of cookies in order for SAML response to make sense
 
-			# print window[1]+window[2],'OLD' #DEBUG
+			print window[1]+window[2],'OLD' #DEBUG
 			next = new_s.get(links[0])
-			payload = get_SAML_data(next.content, new_s)
+			payload, nextAction = get_SAML_data(next.content, new_s)
 			eval_page = new_s.post(nextAction, data=payload)
-			item = OldSurveyStyleItem(eval_page.content)
+			item = OldStyleSurveyItem(eval_page.content)
 
 		#Otherwise, just get
 		else:
