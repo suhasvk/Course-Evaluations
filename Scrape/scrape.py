@@ -87,7 +87,7 @@ def scrape(url):
 		if old:
 			new_s = copy.deepcopy(s) #Must preserve current state of cookies in order for SAML response to make sense
 
-			print window[1]+window[2],'OLD' #DEBUG
+			# print window[1]+window[2],'OLD' #DEBUG
 			next = new_s.get(links[0])
 			payload = get_SAML_data(next.content, new_s)
 			eval_page = new_s.post(nextAction, data=payload)
