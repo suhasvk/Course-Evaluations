@@ -1,10 +1,12 @@
 # mitscrape.py
 import requests as r
 import re
+# from bs4 import BeautifulSoup
 import itertools as i
+from __basic_extraction_flow import NewStyleSurveyItem, OldStyleSurveyItem
+import copy
 
-
-main_path = '/Users/suhasv/Desktop/CourseEval/Scrape/test/'
+main_path = ''
 #ENTER KERBEROS USERNAME AND PASSWORD BELOW TO SCRAPE
 #NOTE: IF YOU FILL IN INFO BELOW, SAVE AS 'use_scrape.py' SO GIT WILL IGNORE IT--DON'T PUSH
 pw = '' #KERBEROS PASSWORD
@@ -12,9 +14,17 @@ un = '' #KERBEROS USERNAME
 
 def write_page(content, name = ""):
 	"""Generates .html file from content string. Useful for debugging."""
-	f = open(main_path+"test"+name+".html","w")
+	f = open(main_path+"__test"+name+".html","w")
 	f.write(content)
 	f.close()
+
+def get_SAML_data(page_str, s):
+	relayState = re.findall('(?<=name="RelayState" value=")\S*(?=")', page_str)[0].replace('&#x3a;',':').replace('&amp;','&')
+	SAMLResponse = re.findall('(?<=name="SAMLResponse" value=")\S*(?=")', page_str)[0]
+	nextAction = re.findall('(?<=action=")\S*(?=")', page_str)[0].replace('&#x3a;',':').replace('&#x2f;','/')
+	s.headers.update({'Referer':'https://idp.mit.edu:446/idp/profile/SAML2/Redirect/SSO'}) 
+	return {'RelayState':relayState, 'SAMLResponse': SAMLResponse}
+	
 
 def scrape(url):
 	global main_path, un, pw
@@ -37,11 +47,7 @@ def scrape(url):
 
 
 	#ATTEMPTS OPENSAML RESPONSE
-	relayState = re.findall('(?<=name="RelayState" value=")\S*(?=")', red2.content)[0].replace('&#x3a;',':').replace('&amp;','&')
-	SAMLResponse = re.findall('(?<=name="SAMLResponse" value=")\S*(?=")', red2.content)[0]
-	nextAction = re.findall('(?<=action=")\S*(?=")', red2.content)[0].replace('&#x3a;',':').replace('&#x2f;','/')
-	s.headers.update({'Referer':'https://idp.mit.edu:446/idp/profile/SAML2/Redirect/SSO'}) 
-	payload_2 = {'RelayState':relayState, 'SAMLResponse': SAMLResponse}
+	payload_2 = get_SAML_data(red2.content, s)
 	red3 = s.post(nextAction, data=payload_2)
 
 	 
@@ -52,14 +58,13 @@ def scrape(url):
 	#VISITING PAGES, SCRAPING DATA#
 	#-----------------------------#
 	#NOW THE REQUESTS SESSION HAS THE COOKIES IT NEEDS TO ACCESS WHATEVER CONTENT YOU CAN VIEW, SO DO WHAT YOU WANT TO
-	courses = ['12.602', '12.002']
+	courses = ['21M.303']
 	years = map(str, range(1998,2014))
 	semesters = ['FA','SP']
 
-	for cls in i.product(courses, years, semesters):
-
+	for window in i.product(courses, years, semesters):
 		#Following line searches evaluations for a given (course, year, semester)
-		search_page = s.get('https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=%s&departmentId=&subjectCode=%s&instructorName=&search=Search' % (cls[1]+cls[2], cls[0]))
+		search_page = s.get('https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=%s&departmentId=&subjectCode=%s&instructorName=&search=Search' % (window[1]+window[2], window[0]))
 
 		#If course wasn't offered that semester, do nothing.
 		if 'No records found' in search_page.content: 
@@ -80,12 +85,18 @@ def scrape(url):
 
 		#If old, follow redirect through to page.
 		if old:
-			continue #TODO
+			new_s = copy.deepcopy(s) #Must preserve current state of cookies in order for SAML response to make sense
 
-		#Visit evaluation page.
-		eval_page = s.get(link)
+			print window[1]+window[2],'OLD' #DEBUG
+			next = new_s.get(links[0])
+			payload = get_SAML_data(next.content, new_s)
+			eval_page = new_s.post(nextAction, data=payload)
+			item = OldSurveyStyleItem(eval_page.content)
 
-		write_page(eval_page.content, 'search%s' % reduce(lambda x,y: x+y, cls)) #TEST
+		#Otherwise, just get
+		else:
+			eval_page = s.get(link)
+			item = NewStyleSurveyItem(eval_page.content)
 
 if __name__ == '__main__':
 	scrape("https://edu-apps.mit.edu/ose-rpt/")
