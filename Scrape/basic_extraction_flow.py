@@ -61,12 +61,7 @@ class DistributionPage:
 		self.soup = BeautifulSoup(file_str)
 		self.criterion = self.soup.h3.get_text()
 		self.distribution = map(lambda x: x.get_text().split(), soup.find_all('li',{'class':'scale'}))
-
-	
-
-
-		
-
+		#graph is a bunch of <li class="scale"> elems...
 
 class OldStyleSurveyItem:
 	def __init__(self, file_str):
