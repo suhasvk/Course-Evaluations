@@ -1,18 +1,31 @@
-The following is a description of the SQL database structure used to contain course evaluation info. It will be updated as the DB is implemented.
+Data Model for Course Evaluations  
 
 TABLE 1:
-- 1 row / subject / survey window
-- Attributes:
-	- Prof names
-	- Course #'s
-	- Subj #'s
-	- Subj name
-	- Respondents
-	- Eligible Respondents
+INT Class# (PK)
+INT Course#
+TEXT Description
+INT Average Overall Score
 
+TABLE 2: 
+INT Class# (PK1)
+INT Semester# (PK2)
+INT Survey Type (new or old)
+INT Respondents
+FLOAT Overall score
 
-TABLE STYLE 2:
-(1 table / subject / survey window)
-- 1 row / question in survey
-- Attributes:
-	- 1 column / potential answer to question, field containing # of students who gave that answer
+TABLE 3:
+INT Question ID (PK)
+FLOAT Question score
+TEXT Question text
+INT Class# 
+INT Semester#
+
+TABLE 4: 
+INT ResponseID (PK)
+FLOAT Response
+INT QuestionID
+
+TABLE 5:
+INT Class# (PK1)
+INT Semester# (PK2)
+TEXT Comment
