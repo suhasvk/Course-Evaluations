@@ -45,6 +45,14 @@ def get_SAML_data(pageString, session):
 	session.headers.update({'Referer':'https://idp.mit.edu:446/idp/profile/SAML2/Redirect/SSO'}) 
 	return {'RelayState':relayState, 'SAMLResponse': SAMLResponse}, nextAction
 
+
+#take in url, live session object- already authenticated,  dictionary<field, value> 
+def getHtmlAsBeautifulSoupObject(baseUrl, session, paramMap):
+	baseUrl += "?" 
+	for i, key in enumerate(paramMap.keys()):
+		baseUrl += key + "=" + paramMap[key]
+		if i != paramMap
+
 ######################################################################################################################
 # Function: scrape
 # 	retrieves survey item objects for a requested set of course evaluation surveys
@@ -58,6 +66,7 @@ def get_SAML_data(pageString, session):
 ######################################################################################################################
 def scrape(url, dateRange, courseNumbers, semsters = ['FA','SP']):
 	global main_path, un, pw
+
 
 	#--------------#
 	#GETTING ACCESS#
