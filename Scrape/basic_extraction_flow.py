@@ -1,13 +1,11 @@
 # __basic_extraction_flow.py
-# Suhas V. | Jan 21, 2015
+# Suhas V. & Abraham Quintero| Jan 21, 2015
 
 from bs4 import BeautifulSoup
 import sqlite3
 import re
 
-
-
-class NewStyleSurveyItem:
+class NewStyleSurveyItem:	
 	def __init__(self, file_str, session = None):
 		"""Initializes object. 
 		'file_str' <- html file of survey page, represented as a unicode string."""
@@ -41,15 +39,13 @@ class NewStyleSurveyItem:
 		l = map(lambda x: re.split('<strong>|</strong>|<a', str(x))[1:3], self.soup.body.findAll('p', class_='tooltip'))
 		return {k[0][:-1]: k[1] for k in l}
 
-
-
 	def getCourse(self):
 		return self.getName().split('.')[0]
 
 	def getRatings(self):
 		links = filter(lambda x: x.has_attr("href"),self.soup.findAll("a"))
 		data_links = filter(lambda x: 'subjectGroupId' in x['href'], links)
-		inds = self.soup.findAll("table", { "class" : "indivQuestions" })
+		inds = self.soup.findAll("table", {"class" : "indivQuestions"})
 		k = filter(lambda x: not any(z.has_attr("href") for z in x.findAll("a")), inds)
 		return (links, data_links, inds, k)
 
