@@ -48,10 +48,8 @@ def get_SAML_data(pageString, session):
 
 #take in url, live session object- already authenticated,  dictionary<field, value> 
 def getHtmlAsBeautifulSoupObject(baseUrl, session, paramMap):
-	baseUrl += "?" 
-	for i, key in enumerate(paramMap.keys()):
-		baseUrl += key + "=" + paramMap[key]
-		if i != paramMap
+        html = session.get(baseUrl, data=paramMap)
+        return BeautifulSoup(html)
 
 ######################################################################################################################
 # Function: scrape
@@ -64,7 +62,7 @@ def getHtmlAsBeautifulSoupObject(baseUrl, session, paramMap):
 # Returns: 
 # 	itemList - a list of survey item objects (NewStyleSurveyItem or OldStyleSurveyItem), which may be used to extract information from the received survey pages
 ######################################################################################################################
-def scrape(url, dateRange, courseNumbers, semsters = ['FA','SP']):
+def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 	global main_path, un, pw
 
 
@@ -88,12 +86,12 @@ def scrape(url, dateRange, courseNumbers, semsters = ['FA','SP']):
 	#Perform the POST request
 	red2 = session.post(action, data = payload)
 
-
 	#NOW WE NEED TO RESPOND TO THE SERVER'S OPENSAML RESPONSE, WHICH IS AN ADDITIONAL SECURITY MEASURE
 	#Extract the relevant information from the page so as to attempt the SAML response
 	payload_2, nextAction = get_SAML_data(red2.content, session)
 	#Make the SAML response, and get the resulting page, which is the original page we were attempting to visit
 	red3 = session.post(nextAction, data=payload_2)
+
 
 	#-----------------------------#
 	#VISITING PAGES, SCRAPING DATA#
