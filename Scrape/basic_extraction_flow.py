@@ -5,8 +5,9 @@ from bs4 import BeautifulSoup
 import sqlite3
 import re
 
+
 class NewStyleSurveyItem:	
-	def __init__(self, file_str, session = None):
+	def __init__(self, file_str, webPageGetterFunction = None):
 		"""Initializes object. 
 		'file_str' <- html file of survey page, represented as a unicode string."""
 

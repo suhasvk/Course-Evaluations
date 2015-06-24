@@ -60,7 +60,7 @@ def getHtmlAsBeautifulSoupObject(baseUrl, session, paramMap):
 #	url - the url of any protected mit page. By accessing it, we'll authenticate ourselves
 #	dateRange - the range of years (represented as an iterable of integers) from which we'd like to retrieve surveys
 # 	courseNumbers - a list of the course numbers (strings, i.e. '18.02') for which we'd like to get survey data
-# semesters - a sublist of ['FA','SP'] which identifies which semesters (fall or spring, or both) we'd like to retrieve surveys from
+# 	semesters - a sublist of ['FA','SP'] which identifies which semesters (fall or spring, or both) we'd like to retrieve surveys from
 # Returns: 
 # 	itemList - a list of survey item objects (NewStyleSurveyItem or OldStyleSurveyItem), which may be used to extract information from the received survey pages
 ######################################################################################################################
@@ -102,6 +102,7 @@ def scrape(url, dateRange, courseNumbers, semsters = ['FA','SP']):
 
 	#This is a list that will contain the objects that correspond to the requested surveys
 	itemList = []
+	webPageGetterFunction = lambda url: getHtmlAsBeautifulSoupObject(url, s, {})
 
 	#For every triple (course#, year, semester) in the requested range
 	for window in itertools.product(courseNumbers, dateRange, semesters):
@@ -140,7 +141,7 @@ def scrape(url, dateRange, courseNumbers, semsters = ['FA','SP']):
 		#Otherwise, just get the page
 		else:
 			eval_page = session.get(link)
-			item = NewStyleSurveyItem(eval_page.content, session)
+			item = NewStyleSurveyItem(eval_page.content, webPageGetterFunction)
 			itemList.append(item)
 
 	return itemList
