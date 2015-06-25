@@ -12,6 +12,7 @@ class NewStyleSurveyItem:
 		'file_str' <- html file of survey page, represented as a unicode string."""
 
 		self.soup = BeautifulSoup(file_str)
+		self.webPageGetterFunction = webPageGetterFunction
 
         def __str__(self):
 		return self.soup.prettify().encode('utf-8')
@@ -58,9 +59,12 @@ class NewStyleSurveyItem:
 		instructorPageLinks = filter(lambda lnk: 'instructorEvaluationReport' in lnk, dataLinks)
 		questionPageLinks = filter(lambda lnk: 'frequencyDistributionReport' in lnk, dataLinks)
 		return (instructorPageLinks, questionPageLinks)
+<<<<<<< Updated upstream
 
 	def dump(self, cursor):
 		pass
+=======
+>>>>>>> Stashed changes
 
 class DistributionPage:
 	def __init__(self, file_str):
