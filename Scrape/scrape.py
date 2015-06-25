@@ -28,6 +28,21 @@ def write_page(content, name = ""):
 	f.write(content)
 	f.close()
 
+#returns a parsed list of classNumbers from class_list.txt
+def getClassNumberList():
+	f = open("class_list.txt", "rb")
+	unparsed = f.readlines()
+	parsed = []
+	for line in unparsed:
+		parsed.append(line.split(None)[0]) #split on all whitespace
+	
+	print parsed
+	return parsed
+
+
+	
+
+
 ######################################################################################################################
 # Function: get_SAML_data
 # 	parses an html file containing an openSAML response into a dictionary that contains the necessary data to successfuly perform the SAML response and
@@ -185,6 +200,6 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 	return surveyItemList
 
 if __name__ == '__main__':
+	classList = getClassNumberList()
 
 	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))
-
