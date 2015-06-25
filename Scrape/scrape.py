@@ -51,6 +51,42 @@ def getHtmlAsBeautifulSoupObject(baseUrl, session, paramMap):
         html = session.get(baseUrl, data=paramMap)
         return BeautifulSoup(html)
 
+
+def setUpSessionWithCredentials(initialUrl):
+	#--------------#
+	#GETTING ACCESS#
+	#--------------#
+
+	#CREATES SESSION
+	session = requests.Session()
+
+
+	#DOES INITIAL URL ATTEMPT; EXPECTS REDIRECT TO TOUCHTONE LOGIN PAGE
+	red1 = session.get(initialUrl)
+
+
+	#ATTEMPTS LOGIN WITH USERNAME AND PASSWORD
+
+	#This gets the url at which to submit the login form
+	action = re.findall('(?<=action=")\S*(?=")', red1.content)[1].replace('&amp;','&')
+	#This dictionary contains the query string to submit to the url
+	payload = {'j_username':un, 'j_password':pw, 'Submit':'Login'}
+	#Perform the POST request
+	red2 = session.post(action, data = payload) #this gives us an opensaml response 
+
+
+	#NOW WE NEED TO RESPOND TO THE SERVER'S OPENSAML RESPONSE, WHICH IS AN ADDITIONAL SECURITY MEASURE
+	#Extract the relevant information from the page so as to attempt the SAML response
+	payload_2, nextAction = get_SAML_data(red2.content, session)
+	#Make the SAML response, and get the resulting page, which is the original page we were attempting to visit
+	red3 = session.post(nextAction, data=payload_2)
+
+	return session
+
+
+
+
+
 ######################################################################################################################
 # Function: scrape
 # 	retrieves survey item objects for a requested set of course evaluation surveys
@@ -66,32 +102,8 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 	global main_path, un, pw
 
 
-	#--------------#
-	#GETTING ACCESS#
-	#--------------#
-
-	#CREATES SESSION
-	session = requests.Session()
-
-
-	#DOES INITIAL URL ATTEMPT; EXPECTS REDIRECT
-	red1 = session.get(url)
-
-	#ATTEMPTS LOGIN WITH USERNAME AND PASSWORD
-
-	#This gets the url at which to submit the login form
-	action = re.findall('(?<=action=")\S*(?=")', red1.content)[1].replace('&amp;','&')
-	#This dictionary contains the query string to submit to the url
-	payload = {'j_username':un, 'j_password':pw, 'Submit':'Login'}
-	#Perform the POST request
-	red2 = session.post(action, data = payload)
-
-	#NOW WE NEED TO RESPOND TO THE SERVER'S OPENSAML RESPONSE, WHICH IS AN ADDITIONAL SECURITY MEASURE
-	#Extract the relevant information from the page so as to attempt the SAML response
-	payload_2, nextAction = get_SAML_data(red2.content, session)
-	#Make the SAML response, and get the resulting page, which is the original page we were attempting to visit
-	red3 = session.post(nextAction, data=payload_2)
-
+	session = setUpSessionWithCredentials(url)
+	
 
 	#-----------------------------#
 	#VISITING PAGES, SCRAPING DATA#
@@ -103,10 +115,18 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 	webPageGetterFunction = lambda url: getHtmlAsBeautifulSoupObject(url, s, {})
 
 	#For every triple (course#, year, semester) in the requested range
-	for window in itertools.product(courseNumbers, dateRange, semesters):
+	#for window in itertools.product(courseNumbers, dateRange, semesters):
+	for (year, courseNumber, semester) in itertools.product(courseNumbers, dateRange, semesters):
 
 		#Following line searches evaluations for the given (course, year, semester)
-		search_page = session.get('https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=%s&departmentId=&subjectCode=%s&instructorName=&search=Search' % (window[1]+window[2], window[0]))
+                searchUrl = 'https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId='+ year + semester +'&departmentId=&subjectCode='+ courseNumber+ '&instructorName=&search=Search'
+		search_page = session.get('https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId='+ year + semester +'&departmentId=&subjectCode='+ courseNumber+ '&instructorName=&search=Search')
+
+                
+#search url looks like: https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=&departmentId=&subjectCode=21M.303&instructorName=&search=Search
+#https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=2015SP&departmentId=&subjectCode=21M.303&instructorName=&search=Search
+
+
 
 		#If course wasn't offered that semester, do nothing.
 		if 'No records found' in search_page.content: 
@@ -129,7 +149,6 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 		if old:
 			new_session = copy.deepcopy(session) #Must preserve current state of cookies in order for SAML response to make sense
 
-			print window[1]+window[2],'OLD' #DEBUG
 			next = new_session.get(links[0])
 			payload, nextAction = get_SAML_data(next.content, new_session)
 			eval_page = new_session.post(nextAction, data=payload)
@@ -147,4 +166,6 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 
 if __name__ == '__main__':
 	itemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(1998,2014)))
+
+        print itemList
 
