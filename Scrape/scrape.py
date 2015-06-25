@@ -184,7 +184,6 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 
 	return surveyItemList
 
-
 if __name__ == '__main__':
 
 	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))

@@ -13,6 +13,7 @@ class NewStyleSurveyItem:
 
 		self.soup = BeautifulSoup(file_str)
 		self.distributionList = []
+		self.webPageGetterFunction = webPageGetterFunction
 
         def __str__(self):
 		return self.soup.prettify().encode('utf-8')
