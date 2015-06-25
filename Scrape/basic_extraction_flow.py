@@ -43,12 +43,17 @@ class NewStyleSurveyItem:
 	def getCourse(self):
 		return self.getName().split('.')[0]
 
-	def getRatings(self):
+	def getRawRatingsInfo(self):
+		#finds all <a href = '... nodes in DOM
 		links = filter(lambda x: x.has_attr("href"),self.soup.findAll("a"))
-		data_links = filter(lambda x: 'subjectGroupId' in x['href'], links)
-		inds = self.soup.findAll("table", {"class" : "indivQuestions"})
-		k = filter(lambda x: not any(z.has_attr("href") for z in x.findAll("a")), inds)
-		return (links, data_links, inds, k)
+
+		#gets 'href' property of each link, and filters these down to just those containing 'subjectGroupId'
+		#these happen to be the ones we care about
+		dataLinks = filter(lambda x: 'subjectGroupId' in x, map(lambda y: y['href'], links)) 
+
+		instructorPageLinks = filter(lambda lnk: 'instructorEvaluationReport' in lnk, dataLinks)
+		questionPageLinks = filter(lambda lnk: 'frequencyDistributionReport' in lnk, dataLinks)
+		return (instructorPageLinks, frequencyDistributionReport)
 
 	def dump(self, cursor):
 		pass
