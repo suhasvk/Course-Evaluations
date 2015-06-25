@@ -174,7 +174,6 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 
 			surveyItemList.append(item)
 
-			surveyItemList.append(item)
 
 	return surveyItemList
 
@@ -183,4 +182,5 @@ if __name__ == '__main__':
 
 	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))
         for item in surveyItemList:
-		print item.getRawRatingsInfo()[1]
+		for link in item.getRawRatingsInfo()[1]: 
+			print link + '\n'
