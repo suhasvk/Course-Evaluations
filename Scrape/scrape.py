@@ -51,8 +51,20 @@ def getHtmlAsBeautifulSoupObject(baseUrl, session, paramMap):
         html = session.get(baseUrl, data=paramMap)
         return BeautifulSoup(html)
 
+def populateDistributionPages(item, session, url):
+	distributionPageList = []
+	for link in item.getRawRatingsInfo()[1]: 
+		distribution = DistributionPage(session.get(url+link).content)
+		distributionPageList.append(distribution)
+	item.addDistributionPages(distributionPageList)
 
-
+def populateTeacherEvaluationPages(item, session, url):
+	teacherEvaluationPageList = []
+	for link in item.getRawRatingsInfo()[0]:
+		teacherEvaluationPage = TeacherEvalItem(session.get(url+link).content)
+		populateDistributionPages(teacherEvaluationPage, session, url)
+		teacherEvaluationPage.append(teacherEvaluationPage)
+	item.addTeacherEvaluationPages(teacherEvaluationPageList)
 
 def setUpSessionWithCredentials(initialUrl):
 	#--------------#
@@ -85,8 +97,6 @@ def setUpSessionWithCredentials(initialUrl):
 
 	return session
 
-
-
 ######################################################################################################################
 # Function: scrape
 # 	retrieves survey item objects for a requested set of course evaluation surveys
@@ -103,7 +113,6 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 
 	print 'logging in'
 	session = setUpSessionWithCredentials(url)
-	
 
 	#-----------------------------#
 	#VISITING PAGES, SCRAPING DATA#
@@ -112,24 +121,20 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 
 	#This is a list that will contain the objects that correspond to the requested surveys
 	surveyItemList = []
-	webPageGetterFunction = lambda url: getHtmlAsBeautifulSoupObject(url, s, {})
-
+	
 	#For every triple (course#, year, semester) in the requested range
 	#for window in itertools.product(courseNumbers, dateRange, semesters):
 
 	print 'getting course data'
 
 	for (year, courseNumber, semester) in itertools.product(courseNumbers, dateRange, semesters):
-
 		#Following line searches evaluations for the given (course, year, semester)
-                searchUrl = 'https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId='+ year + semester +'&departmentId=&subjectCode='+ courseNumber+ '&instructorName=&search=Search'
-		search_page = session.get('https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId='+ year + semester +'&departmentId=&subjectCode='+ courseNumber+ '&instructorName=&search=Search')
+		searchUrl = 'https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=' + year + semester + '&departmentId=&subjectCode=' + courseNumber + '&instructorName=&search=Search'
+		search_page = session.get(searchUrl)
 
-                
-#search url looks like: https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=&departmentId=&subjectCode=21M.303&instructorName=&search=Search
-#https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=2015SP&departmentId=&subjectCode=21M.303&instructorName=&search=Search
-
-	
+		        
+		#search url looks like: https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=&departmentId=&subjectCode=21M.303&instructorName=&search=Search
+		#https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=2015SP&departmentId=&subjectCode=21M.303&instructorName=&search=Search
 
 		#If course wasn't offered that semester, do nothing.
 		if 'No records found' in search_page.content: 
@@ -164,7 +169,7 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 		#Otherwise, just get the page
 		else:
 			eval_page = session.get(link)
-			item = NewStyleSurveyItem(eval_page.content, webPageGetterFunction)
+			item = NewStyleSurveyItem(eval_page.content)
 
 			#new link looks like: 
 			#https://edu-apps.mit.edu/ose-rpt/subjectEvaluationReport.htm?surveyId=489&subjectGroupId=06B2B712C0DA071DE0533D2F0912587C&subjectId=21M.303
@@ -173,18 +178,12 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 			#https://edu-apps.mit.edu/ose-rpt/frequencyDistributionReport.htm?va=&subjectId=21M.303&surveyId=489&subjectGroupId=06B2B712C0DA071DE0533D2F0912587C&questionId=5291&questionGroupId=4391&typeKey=subject
 
 			surveyItemList.append(item)
-			distributionPageList = []
-			for link in item.getRawRatingsInfo()[1]: 
-				distribution = DistributionPage(session.get(url+link).content)
-				distributionPageList.append(distribution)
-
-			item.addDistributionPages(distributionPageList)
+			populateDistributionPages(item, session, url)
+			populateTeacherEvaluationPages(item, session, url)
 
 
-
-	return surveyItemList
+	return surveyItemList, session
 
 if __name__ == '__main__':
-
 	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))
 
