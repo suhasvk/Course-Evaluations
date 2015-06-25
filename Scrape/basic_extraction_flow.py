@@ -5,17 +5,43 @@ from bs4 import BeautifulSoup
 import sqlite3
 import re
 
-
-class NewStyleSurveyItem:	
-	def __init__(self, file_str, webPageGetterFunction = None):
+class SurveyItemWithDistributionLinks:
+	def __init__(self, file_str):
 		"""Initializes object. 
 		'file_str' <- html file of survey page, represented as a unicode string."""
-
 		self.soup = BeautifulSoup(file_str)
 		self.distributionList = []
-		self.webPageGetterFunction = webPageGetterFunction
 
-        def __str__(self):
+	def getRawRatingsInfo(self):
+		#finds all <a href = '... nodes in DOM
+		links = filter(lambda x: x.has_attr("href"),self.soup.findAll("a"))
+
+		#gets 'href' property of each link, and filters these down to just those containing 'subjectGroupId'
+		#these happen to be the ones we care about
+		dataLinks = filter(lambda x: 'subjectGroupId' in x, map(lambda y: y['href'], links)) 
+
+		instructorPageLinks = filter(lambda lnk: 'instructorEvaluationReport' in lnk, dataLinks)
+		questionPageLinks = filter(lambda lnk: 'frequencyDistributionReport' in lnk, dataLinks)
+		return (instructorPageLinks, questionPageLinks)
+
+	def addDistributionPages(self, distributionPageList):
+		self.distributionList += distributionPageList
+
+class TeacherEvalItem (SurveyItemWithDistributionLinks):
+	def __init__(self, file_str):
+		"""Initializes object. 
+		'file_str' <- html file of survey page, represented as a unicode string."""
+		SurveyItemWithDistributionLinks.__init__(self, file_str)
+
+
+class NewStyleSurveyItem (SurveyItemWithDistributionLinks):	
+	def __init__(self, file_str):
+		"""Initializes object. 
+		'file_str' <- html file of survey page, represented as a unicode string."""
+		SurveyItemWithDistributionLinks.__init__(self, file_str)
+		self.teacherEvaluationList = []
+
+    def __str__(self):
 		return self.soup.prettify().encode('utf-8')
 
 
@@ -33,11 +59,11 @@ class NewStyleSurveyItem:
 	def getName(self):
 		"""Returns course title, i.e. '<Course #> <Course Name>'"""
 
-		def clean_wspace(s):
-			return ' '.join(s.split())
+		def standardizeWhitespace(string):
+			return ' '.join(string.split())
 
 		#Title is stored in 'h1' child of 'lsubjectTitle' table
-		return clean_wspace(self.soup.find('td', class_='subjectTitle').h1.text)
+		return standardizeWhitespace(self.soup.find('td', class_='subjectTitle').h1.text)
 
 	def getRespondentInfo(self):
 		"Returns dict: {'<Field Name>': "
@@ -49,23 +75,9 @@ class NewStyleSurveyItem:
 	def getCourse(self):
 		return self.getName().split('.')[0]
 
-	def getRawRatingsInfo(self):
-		#finds all <a href = '... nodes in DOM
-		links = filter(lambda x: x.has_attr("href"),self.soup.findAll("a"))
 
-		#gets 'href' property of each link, and filters these down to just those containing 'subjectGroupId'
-		#these happen to be the ones we care about
-		dataLinks = filter(lambda x: 'subjectGroupId' in x, map(lambda y: y['href'], links)) 
-
-		instructorPageLinks = filter(lambda lnk: 'instructorEvaluationReport' in lnk, dataLinks)
-		questionPageLinks = filter(lambda lnk: 'frequencyDistributionReport' in lnk, dataLinks)
-		return (instructorPageLinks, questionPageLinks)
-
-	def addDistributionPages(self, distributionPageList):
-		self.distributionList += distributionPageList
-
-	def dump(self, cursor):
-		pass
+	def addTeacherEvaluationPages(self, teacherEvaluationPageList):
+		self.teacherEvaluationList += teacherEvaluationPageList
 
 class DistributionPage:
 	def __init__(self, file_str):
