@@ -13,6 +13,10 @@ class NewStyleSurveyItem:
 
 		self.soup = BeautifulSoup(file_str)
 
+        def __str__(self):
+		return self.soup.prettify().encode('utf-8')
+
+
 	def getProfs(self):
 		links = filter(lambda x: x.has_attr("href"),self.soup.findAll("a"))
 		data_links = filter(lambda x: 'subjectGroupId' in x['href'], links)

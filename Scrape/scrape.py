@@ -52,6 +52,8 @@ def getHtmlAsBeautifulSoupObject(baseUrl, session, paramMap):
         return BeautifulSoup(html)
 
 
+
+
 def setUpSessionWithCredentials(initialUrl):
 	#--------------#
 	#GETTING ACCESS#
@@ -82,8 +84,6 @@ def setUpSessionWithCredentials(initialUrl):
 	red3 = session.post(nextAction, data=payload_2)
 
 	return session
-
-
 
 
 
@@ -145,6 +145,9 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 			link = 'https://edu-apps.mit.edu/ose-rpt/'+ re.findall('(?<=<a href=")subjectEvaluationReport\S*(?=")',search_page.content)[0]
 			old = False
 
+		print link
+
+		
 		#If old, follow redirect through to page.
 		if old:
 			new_session = copy.deepcopy(session) #Must preserve current state of cookies in order for SAML response to make sense
@@ -159,13 +162,17 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 		else:
 			eval_page = session.get(link)
 			item = NewStyleSurveyItem(eval_page.content, webPageGetterFunction)
+			#new link looks like: 
+			#https://edu-apps.mit.edu/ose-rpt/subjectEvaluationReport.htm?surveyId=489&subjectGroupId=06B2B712C0DA071DE0533D2F0912587C&subjectId=21M.303
+			distributionUrl =  ""
+
+			#distributionUrl looks like: 
+			#https://edu-apps.mit.edu/ose-rpt/frequencyDistributionReport.htm?va=&subjectId=21M.303&surveyId=489&subjectGroupId=06B2B712C0DA071DE0533D2F0912587C&questionId=5291&questionGroupId=4391&typeKey=subject
+
 			itemList.append(item)
 
 	return itemList
 
 
 if __name__ == '__main__':
-	itemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(1998,2014)))
-
-        print itemList
-
+	itemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))
