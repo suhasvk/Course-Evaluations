@@ -172,7 +172,7 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 			#distributionUrl looks like: 
 			#https://edu-apps.mit.edu/ose-rpt/frequencyDistributionReport.htm?va=&subjectId=21M.303&surveyId=489&subjectGroupId=06B2B712C0DA071DE0533D2F0912587C&questionId=5291&questionGroupId=4391&typeKey=subject
 
-			itemList.append(item)
+			surveyItemList.append(item)
 
 			surveyItemList.append(item)
 
@@ -181,6 +181,6 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 
 if __name__ == '__main__':
 
-	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2010,2014)))
-
-   
+	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))
+        for item in surveyItemList:
+		print item.getRawRatingsInfo()[1]
