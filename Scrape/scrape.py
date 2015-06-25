@@ -3,7 +3,7 @@ import requests
 import re
 # from bs4 import BeautifulSoup
 import itertools
-from basic_extraction_flow import NewStyleSurveyItem, OldStyleSurveyItem
+from basic_extraction_flow import NewStyleSurveyItem, OldStyleSurveyItem, DistributionPage
 import copy
 
 main_path = ''
@@ -173,6 +173,13 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 			#https://edu-apps.mit.edu/ose-rpt/frequencyDistributionReport.htm?va=&subjectId=21M.303&surveyId=489&subjectGroupId=06B2B712C0DA071DE0533D2F0912587C&questionId=5291&questionGroupId=4391&typeKey=subject
 
 			surveyItemList.append(item)
+			distributionPageList = []
+			for link in item.getRawRatingsInfo()[1]: 
+				distribution = DistributionPage(session.get(url+link).content)
+				distributionPageList.append(distribution)
+
+			item.addDistributionPages(distributionPageList)
+
 
 
 	return surveyItemList
@@ -181,6 +188,4 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 if __name__ == '__main__':
 
 	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))
-        for item in surveyItemList:
-		for link in item.getRawRatingsInfo()[1]: 
-			print link + '\n'
+

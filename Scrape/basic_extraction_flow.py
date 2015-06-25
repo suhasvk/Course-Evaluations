@@ -12,6 +12,7 @@ class NewStyleSurveyItem:
 		'file_str' <- html file of survey page, represented as a unicode string."""
 
 		self.soup = BeautifulSoup(file_str)
+		self.distributionList = []
 
         def __str__(self):
 		return self.soup.prettify().encode('utf-8')
@@ -59,6 +60,9 @@ class NewStyleSurveyItem:
 		questionPageLinks = filter(lambda lnk: 'frequencyDistributionReport' in lnk, dataLinks)
 		return (instructorPageLinks, questionPageLinks)
 
+	def addDistributionPages(self, distributionPageList):
+		self.distributionList += distributionPageList
+
 	def dump(self, cursor):
 		pass
 
@@ -66,7 +70,7 @@ class DistributionPage:
 	def __init__(self, file_str):
 		self.soup = BeautifulSoup(file_str)
 		self.criterion = self.soup.h3.get_text()
-		self.distribution = map(lambda x: x.get_text().split(), soup.find_all('li',{'class':'scale'}))
+		self.distribution = map(lambda x: x.get_text().split(), self.soup.find_all('li',{'class':'scale'}))
 		#graph is a bunch of <li class="scale"> elems...
 
 class OldStyleSurveyItem:
