@@ -57,7 +57,7 @@ class NewStyleSurveyItem:
 
 		instructorPageLinks = filter(lambda lnk: 'instructorEvaluationReport' in lnk, dataLinks)
 		questionPageLinks = filter(lambda lnk: 'frequencyDistributionReport' in lnk, dataLinks)
-		return (instructorPageLinks, frequencyDistributionReport)
+		return (instructorPageLinks, questionPageLinks)
 
 	def dump(self, cursor):
 		pass
