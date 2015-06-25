@@ -71,7 +71,14 @@ class DistributionPage:
 	def __init__(self, file_str):
 		self.soup = BeautifulSoup(file_str)
 		self.criterion = self.soup.h3.get_text()
-		self.distribution = map(lambda x: x.get_text().split(), self.soup.find_all('li',{'class':'scale'}))
+
+		distList = map(lambda x: x.get_text().split(), self.soup.find_all('li',{'class':'scale'})) #makes a list of lists: [["score", "numberOfPeopleThatGaveThatScore], ["score", ...]]
+		distMap = {}
+                for innerList in distList:
+			distMap[innerList[0]] = int(innerList[1])
+
+		self.distribution = distMap #map is <string, integer> where key is score (1 through 7 or N/A) and value is the number that chose that option
+		#self.distribution = map(lambda x: x.get_text().split(), self.soup.find_all('li',{'class':'scale'}))
 		#graph is a bunch of <li class="scale"> elems...
 
 class OldStyleSurveyItem:
