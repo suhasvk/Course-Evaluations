@@ -3,7 +3,7 @@ import requests
 import re
 # from bs4 import BeautifulSoup
 import itertools
-from basic_extraction_flow import NewStyleSurveyItem, OldStyleSurveyItem, DistributionPage
+from basic_extraction_flow import NewStyleSurveyItem, OldStyleSurveyItem, DistributionPage, TeacherEvalItem
 import copy
 
 main_path = ''
@@ -63,8 +63,8 @@ def get_SAML_data(pageString, session):
 
 #take in url, live session object- already authenticated,  dictionary<field, value> 
 def getHtmlAsBeautifulSoupObject(baseUrl, session, paramMap):
-        html = session.get(baseUrl, data=paramMap)
-        return BeautifulSoup(html)
+    html = session.get(baseUrl, data=paramMap)
+    return BeautifulSoup(html)
 
 def populateDistributionPages(item, session, url):
 	distributionPageList = []
@@ -78,7 +78,7 @@ def populateTeacherEvaluationPages(item, session, url):
 	for link in item.getRawRatingsInfo()[0]:
 		teacherEvaluationPage = TeacherEvalItem(session.get(url+link).content)
 		populateDistributionPages(teacherEvaluationPage, session, url)
-		teacherEvaluationPage.append(teacherEvaluationPage)
+		teacherEvaluationPageList.append(teacherEvaluationPage)
 	item.addTeacherEvaluationPages(teacherEvaluationPageList)
 
 def setUpSessionWithCredentials(initialUrl):
@@ -197,7 +197,7 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 			populateTeacherEvaluationPages(item, session, url)
 
 
-	return surveyItemList, session
+	return surveyItemList
 
 if __name__ == '__main__':
 	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))

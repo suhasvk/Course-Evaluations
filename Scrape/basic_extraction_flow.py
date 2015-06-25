@@ -5,6 +5,10 @@ from bs4 import BeautifulSoup
 import sqlite3
 import re
 
+def standardizeWhitespace(string):
+	return ' '.join(string.split())
+
+
 class SurveyItemWithDistributionLinks:
 	def __init__(self, file_str):
 		"""Initializes object. 
@@ -33,15 +37,29 @@ class TeacherEvalItem (SurveyItemWithDistributionLinks):
 		'file_str' <- html file of survey page, represented as a unicode string."""
 		SurveyItemWithDistributionLinks.__init__(self, file_str)
 
+	def getTeacherInfo(self):
+		titleElement = self.soup.find('title')
+		digestedTitle = titleElement.getText().strip().split(',')
+		firstName = digestedTitle[1]
+		lastName = digestedTitle[0]
+		role = digestedTitle[2].split()[0]
+		return {
+			'First Name':firstName,
+			'Last Name':lastName,
+			'Role': role
+		}
+
 
 class NewStyleSurveyItem (SurveyItemWithDistributionLinks):	
+	
 	def __init__(self, file_str):
 		"""Initializes object. 
 		'file_str' <- html file of survey page, represented as a unicode string."""
 		SurveyItemWithDistributionLinks.__init__(self, file_str)
 		self.teacherEvaluationList = []
+		return
 
-    def __str__(self):
+	def __str__(self):
 		return self.soup.prettify().encode('utf-8')
 
 
@@ -58,9 +76,6 @@ class NewStyleSurveyItem (SurveyItemWithDistributionLinks):
 
 	def getName(self):
 		"""Returns course title, i.e. '<Course #> <Course Name>'"""
-
-		def standardizeWhitespace(string):
-			return ' '.join(string.split())
 
 		#Title is stored in 'h1' child of 'lsubjectTitle' table
 		return standardizeWhitespace(self.soup.find('td', class_='subjectTitle').h1.text)
@@ -83,7 +98,6 @@ class DistributionPage:
 	def __init__(self, file_str):
 		self.soup = BeautifulSoup(file_str)
 		self.criterion = self.soup.h3.get_text()
-
 		distList = map(lambda x: x.get_text().split(), self.soup.find_all('li',{'class':'scale'})) #makes a list of lists: [["score", "numberOfPeopleThatGaveThatScore], ["score", ...]]
 		distMap = {}
                 for innerList in distList:
