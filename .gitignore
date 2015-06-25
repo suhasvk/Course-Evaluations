@@ -39,3 +39,6 @@ Thumbs.db
 
 #SENSITIVE FILES
 use_scrape.py
+test*.html
+__*
+

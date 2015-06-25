@@ -96,12 +96,12 @@ def setUpSessionWithCredentials(initialUrl):
 # 	courseNumbers - a list of the course numbers (strings, i.e. '18.02') for which we'd like to get survey data
 # 	semesters - a sublist of ['FA','SP'] which identifies which semesters (fall or spring, or both) we'd like to retrieve surveys from
 # Returns: 
-# 	itemList - a list of survey item objects (NewStyleSurveyItem or OldStyleSurveyItem), which may be used to extract information from the received survey pages
+# 	surveyItemList - a list of survey item objects (NewStyleSurveyItem or OldStyleSurveyItem), which may be used to extract information from the received survey pages
 ######################################################################################################################
 def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 	global main_path, un, pw
 
-
+	print 'logging in'
 	session = setUpSessionWithCredentials(url)
 	
 
@@ -111,11 +111,14 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 	#NOW THE REQUESTS SESSION HAS THE COOKIES IT NEEDS TO ACCESS WHATEVER CONTENT YOU CAN VIEW, SO DO WHAT YOU WANT TO
 
 	#This is a list that will contain the objects that correspond to the requested surveys
-	itemList = []
+	surveyItemList = []
 	webPageGetterFunction = lambda url: getHtmlAsBeautifulSoupObject(url, s, {})
 
 	#For every triple (course#, year, semester) in the requested range
 	#for window in itertools.product(courseNumbers, dateRange, semesters):
+
+	print 'getting course data'
+
 	for (year, courseNumber, semester) in itertools.product(courseNumbers, dateRange, semesters):
 
 		#Following line searches evaluations for the given (course, year, semester)
@@ -126,7 +129,7 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 #search url looks like: https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=&departmentId=&subjectCode=21M.303&instructorName=&search=Search
 #https://edu-apps.mit.edu/ose-rpt/subjectEvaluationSearch.htm?termId=2015SP&departmentId=&subjectCode=21M.303&instructorName=&search=Search
 
-
+	
 
 		#If course wasn't offered that semester, do nothing.
 		if 'No records found' in search_page.content: 
@@ -156,23 +159,28 @@ def scrape(url, dateRange, courseNumbers, semesters = ['FA','SP']):
 			payload, nextAction = get_SAML_data(next.content, new_session)
 			eval_page = new_session.post(nextAction, data=payload)
 			item = OldStyleSurveyItem(eval_page.content)
-			itemList.append(item)
+			surveyItemList.append(item)
 
 		#Otherwise, just get the page
 		else:
 			eval_page = session.get(link)
 			item = NewStyleSurveyItem(eval_page.content, webPageGetterFunction)
+
 			#new link looks like: 
 			#https://edu-apps.mit.edu/ose-rpt/subjectEvaluationReport.htm?surveyId=489&subjectGroupId=06B2B712C0DA071DE0533D2F0912587C&subjectId=21M.303
-			distributionUrl =  ""
 
 			#distributionUrl looks like: 
 			#https://edu-apps.mit.edu/ose-rpt/frequencyDistributionReport.htm?va=&subjectId=21M.303&surveyId=489&subjectGroupId=06B2B712C0DA071DE0533D2F0912587C&questionId=5291&questionGroupId=4391&typeKey=subject
 
 			itemList.append(item)
 
-	return itemList
+			surveyItemList.append(item)
+
+	return surveyItemList
 
 
 if __name__ == '__main__':
-	itemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2013,2014)))
+
+	surveyItemList = scrape("https://edu-apps.mit.edu/ose-rpt/", ['21M.303'], map(str, range(2010,2014)))
+
+   
