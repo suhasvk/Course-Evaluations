@@ -1,27 +1,18 @@
 {
-  "name": "CourseEval",
-  "version": "1.0.0",
-  "description": "Better course evaluations at MIT",
-  "main": "index.js",
+  "name": "Server",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./bin/www"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/suhasvk/Course-Evaluations.git"
-  },
-  "keywords": [
-    "Course",
-    "Evaluations",
-    "MIT"
-  ],
-  "author": "Suhas Vijaykumar & Abraham Quintero",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/suhasvk/Course-Evaluations/issues"
-  },
-  "homepage": "https://github.com/suhasvk/Course-Evaluations",
   "dependencies": {
-    "express": "^4.12.3"
+    "body-parser": "~1.12.0",
+    "cookie-parser": "~1.3.4",
+    "debug": "~2.1.1",
+    "express": "~4.12.2",
+    "jade": "~1.9.2",
+    "morgan": "~1.5.1",
+    "serve-favicon": "~2.2.0", 
+    "sqlite3": "*"
   }
 }
